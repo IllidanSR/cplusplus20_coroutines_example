@@ -14,7 +14,7 @@ struct generator {
         }
         auto initial_suspend() {
             std::cout << "Started the coroutine, let's pause!" << std::endl;
-            return std::suspend_always{};
+            return std::suspend_never{};
         }
         auto final_suspend() {
             std::cout << "Finished the coroutine" << std::endl;
@@ -56,6 +56,17 @@ struct generator {
         std::cout << (still_going ? "There is another" : "We're done") << std::endl;
         return still_going;
     }
+    ~generator() {
+        std::cout << "~generator "
+                  << (not coro ? "(empty)" : "(contains a coroutine)")
+                  << std::endl;
+        if ( coro ) coro.destroy();
+    }
+    generator(const generator &) = delete;
+    generator(generator &&g)
+            : coro(g.coro) {
+        g.coro = nullptr;
+    };
 
 
 private:
